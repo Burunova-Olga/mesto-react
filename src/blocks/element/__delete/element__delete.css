@@ -11,7 +11,7 @@
 
   border: 0;
 
-  background-image: url(../../../../images/delete-btn.svg);
+  background-image: url(../../../images/delete-btn.svg);
   background-size: contain;
   background-color: rgba(0, 0, 0, 0);
   background-position: center;

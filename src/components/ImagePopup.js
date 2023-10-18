@@ -1,15 +1,17 @@
 import React from 'react';
 
-function ImagePopup(props)
+function ImagePopup({isOpen, onClose, card})
 {  
   return (
-    <div className={`popup popup_type_zoom ${props.isOpen ? "popup_opened" : ''}`} id="popup-zoom">
+    <div className={`popup popup_type_zoom ${isOpen ? "popup_opened" : ''}`} id="popup-zoom">
       <div className="popup__container photo">
         <div className="close">
-          <button type="button" className="button close__button" aria-label="Закрыть без сохранения"  onClick={props.onClose}></button>
+          <button type="button" className="button close__button" aria-label="Закрыть без сохранения"  onClick={onClose} />
         </div>
-        <img className ="photo__image" src={`${props.isOpen ? props.card.link : '#'} `} alt="Фотография"></img>
-        <p className="photo__text">{props.isOpen ? props.card.name : ''}</p>
+        <img className ="photo__image"
+          src={`${(card.link != " ") ? card.link : '#'} `} 
+          alt= {(card.name != " ") ? card.name : 'Фотография'} />
+        <p className="photo__text">{(card.name != " ") ? card.name : ''}</p>
       </div>
     </div>
   ); 

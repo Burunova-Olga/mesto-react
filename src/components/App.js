@@ -3,14 +3,18 @@ import Header from './Header';
 import Main from './Main';
 import Footer from './Footer';
 import ImagePopup from './ImagePopup';
+import FormProfile from './FormProfile';
+import FormPlaces from './FormPlaces';
+import FormAvatar from './FormAvatar';
+import FormDelete from './FormDelete';
 
 function App()
 {
   const [isEditAvatarPopupOpen, setEditAvatarPopupOpen] = React.useState(false);
   const [isEditProfilePopupOpen, setEditProfilePopupOpen] = React.useState(false);
   const [isAddPlacePopupOpen, setAddPlacePopupOpen] = React.useState(false);
-  const [selectedCard, setSelectedCard] = React.useState();
-  const [isImageZoomPopupOpen, setImageZoomPopupOpen] = React.useState();
+  const [selectedCard, setSelectedCard] = React.useState({name: '', link: ''});
+  const [isImageZoomPopupOpen, setImageZoomPopupOpen] = React.useState(false);
 
   // Открытие картинки на полный экран
   function handleCardClick(card)
@@ -43,6 +47,7 @@ function App()
     setEditAvatarPopupOpen(false);
     setEditProfilePopupOpen(false);
     setAddPlacePopupOpen(false);
+    setSelectedCard({name: '', link: ''});    
     setImageZoomPopupOpen(false);
   }
 
@@ -53,13 +58,26 @@ function App()
         onEditProfile={handleEditProfileClick} 
         onAddPlace ={handleAddPlaceClick}
         onEditAvatar ={handleEditAvatarClick}
-        onClose = {closeAllPopups}
         onCardClick = {handleCardClick}
-        isEditAvatarPopupOpen = {isEditAvatarPopupOpen}
-        isEditProfilePopupOpen = {isEditProfilePopupOpen}
-        isAddPlacePopupOpen = {isAddPlacePopupOpen}
       />    
       <Footer />
+      
+      <FormProfile 
+        isOpen ={isEditProfilePopupOpen}
+        onClose={closeAllPopups}
+      />      
+      <FormAvatar 
+        isOpen ={isEditAvatarPopupOpen}
+        onClose={closeAllPopups}
+      />
+      <FormPlaces 
+        isOpen ={isAddPlacePopupOpen}
+        onClose={closeAllPopups}
+      />
+      <FormDelete 
+        isOpen ={false}
+        onClose={closeAllPopups}
+      />
       <ImagePopup 
         isOpen = {isImageZoomPopupOpen}
         onClose = {closeAllPopups}
