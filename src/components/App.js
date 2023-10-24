@@ -52,9 +52,14 @@ function App()
   }
 
   // Удаление картинки
-  function handleDeleteClick(card)
+  function handleCardDelete(card)
   {
-    //
+    console.log(card);
+    api.deleteCard(card._id)
+      .then(() => 
+      {
+        updateCards((state) => state.filter((oldCard) => oldCard._id !== card._id));
+      });
   }
    
   // Изменение аватара
@@ -73,11 +78,10 @@ function App()
   function handleCardLike(card)
   {
     const isLiked = card.likes.some(i => i._id === currentUser._id);
-    console.log(isLiked);
     api.changeLike(card._id, !isLiked)
       .then((newCard) => 
       {
-        updateCards((state) => state.map((c) => c._id === card._id ? newCard : c));
+        updateCards((state) => state.map((oldCard) => oldCard._id === card._id ? newCard : oldCard));
       });
   }
 
@@ -106,7 +110,7 @@ function App()
         onAddPlace ={handleAddPlaceClick}
         onEditAvatar ={handleEditAvatarClick}
         onCardClick = {handleCardClick}
-        onDeleteClick = {handleDeleteClick}
+        onCardDelete = {handleCardDelete}
         onCardLike = {handleCardLike}
       />    
       <Footer />
