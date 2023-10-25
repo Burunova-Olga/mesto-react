@@ -43,6 +43,20 @@ function App()
       })
       .catch(console.error);
   }, []); 
+  
+  // Уходя - гасите свет
+  function closeAllPopups()
+  {
+    setEditAvatarPopupOpen(false);
+    setEditProfilePopupOpen(false);
+    setAddPlacePopupOpen(false);
+    setSelectedCard({name: '', link: ''});    
+    setImageZoomPopupOpen(false);
+  }
+
+  //----------------------------------------------------
+  //                    Картинки
+  //----------------------------------------------------
 
   // Открытие картинки на полный экран
   function handleCardClick(card)
@@ -61,19 +75,13 @@ function App()
         updateCards((state) => state.filter((oldCard) => oldCard._id !== card._id));
       });
   }
+
+  // Добавление новой фотографии
+  function handleAddPlaceClick()
+  {
+    setAddPlacePopupOpen(true);
+  }
    
-  // Изменение аватара
-  function handleEditAvatarClick()
-  {
-    setEditAvatarPopupOpen(true);
-  }
-
-  // Изменение профиля
-  function handleEditProfileClick()
-  {
-    setEditProfilePopupOpen(true);
-  }
-
   // Постановка лайка
   function handleCardLike(card)
   {
@@ -85,22 +93,56 @@ function App()
       });
   }
 
-  // Добавление новой фотографии
-  function handleAddPlaceClick()
+  //----------------------------------------------------
+  //                    Аватар
+  //----------------------------------------------------
+
+  // Изменение аватара
+  function handleEditAvatarClick()
   {
-    setAddPlacePopupOpen(true);
+    setEditAvatarPopupOpen(true);
+  }
+  
+  function handleUpdateAvatar(link)
+  {
+    api.setUserAvatar(link)
+      .then((result) =>
+      {
+        setCurrentUser({
+          name: currentUser.name,
+          about: currentUser.about,
+          avatar: result.avatar
+        });
+        closeAllPopups();
+      });
   }
 
-  // Уходя - гасите свет
-  function closeAllPopups()
+  //----------------------------------------------------
+  //                    Профиль
+  //----------------------------------------------------
+  // Изменение профиля
+  function handleEditProfileClick()
   {
-    setEditAvatarPopupOpen(false);
-    setEditProfilePopupOpen(false);
-    setAddPlacePopupOpen(false);
-    setSelectedCard({name: '', link: ''});    
-    setImageZoomPopupOpen(false);
+    setEditProfilePopupOpen(true);
   }
 
+  function handleUpdateUser(name, about)
+  {
+    api.setUserInfo(name, about)
+      .then((result) =>
+      {
+        setCurrentUser({
+          name: result.name,
+          about: result.about,
+          avatar: currentUser.avatar
+        });
+        closeAllPopups();
+      });
+  }
+ 
+  //----------------------------------------------------
+  //                    Страница
+  //----------------------------------------------------
   return ( 
     <CurrentUserContext.Provider value={currentUser}>
       <Header />
@@ -118,10 +160,12 @@ function App()
       <FormProfile 
         isOpen ={isEditProfilePopupOpen}
         onClose={closeAllPopups}
+        onUpdateUser = {handleUpdateUser}
       />      
       <FormAvatar 
         isOpen ={isEditAvatarPopupOpen}
         onClose={closeAllPopups}
+        onUpdateAvatar = {handleUpdateAvatar}
       />
       <FormPlaces 
         isOpen ={isAddPlacePopupOpen}
