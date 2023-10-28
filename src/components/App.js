@@ -1,56 +1,56 @@
 import React from 'react';
+
+import api from '../utils/Api';
+import { CurrentUserContext } from '../contexts/CurrentUserContext';
+import Avatar from '../images/profile-image.jpg';
+
 import Header from './Header';
 import Main from './Main';
 import Footer from './Footer';
-import ImagePopup from './ImagePopup';
-import FormProfile from './FormProfile';
-import FormPlaces from './FormPlaces';
-import FormAvatar from './FormAvatar';
-import FormDelete from './FormDelete';
-import { CurrentUserContext } from './CurrentUserContext';
-import Avatar from '../images/profile-image.jpg';
-import api from '../utils/Api';
+
+import PopupEditAvatar from './PopupEditAvatar';
+import PopupEditProfile from './PopupEditProfile';
+import PopupAddPlace from './PopupAddPlace';
+import PopupImageZoom from './PopupImageZoom';
+import PopupDeletePlace from './PopupDeletePlace';
 
 function App()
 {
-  const [isEditAvatarPopupOpen, setEditAvatarPopupOpen] = React.useState(false);
-  const [isEditProfilePopupOpen, setEditProfilePopupOpen] = React.useState(false);
-  const [isAddPlacePopupOpen, setAddPlacePopupOpen] = React.useState(false);
-  const [selectedCard, setSelectedCard] = React.useState({name: '', link: ''});
-  const [isImageZoomPopupOpen, setImageZoomPopupOpen] = React.useState(false); 
-  const [cards, updateCards] = React.useState([]);
+  const [isPopupEditAvatarOpen, setIsPopupEditAvatarOpen] = React.useState(false);
+  const [isPopupEditProfileOpen, setIsPopupEditProfileOpen] = React.useState(false);
+  const [isPopupAddPlaceOpen, setIsPopupAddPlaceOpen] = React.useState(false);
+  const [isPopupImageZoomOpen, setIsPopupImageZoomOpen] = React.useState(false);
+
+  const [cards, setCards] = React.useState([]);
+  const [selectedCard, setSelectedCard] = React.useState({ name: '', link: '' });
+
   const [currentUser, setCurrentUser] = React.useState(
     {
       name: 'Жак-Ив Кусто',
       about: 'Исследователь океана',
-      avatar: {Avatar}
+      avatar: { Avatar }
     });
 
-  React.useEffect(() => 
+  React.useEffect(() =>
   {
-    api.getUserInfo()
-      .then((userData) => 
-      {     
+    Promise.all([api.getUserInfo(), api.getInitialCards()])
+      .then(([userData, cardsData]) =>
+      {
         setCurrentUser(userData);
+        setCards(cardsData);
       })
       .catch(console.error);
+  }, []);
 
-      api.getInitialCards()
-      .then((cardsData) => 
-      {  
-        updateCards(cardsData); 
-      })
-      .catch(console.error);
-  }, []); 
-  
   // Уходя - гасите свет
   function closeAllPopups()
   {
-    setEditAvatarPopupOpen(false);
-    setEditProfilePopupOpen(false);
-    setAddPlacePopupOpen(false);
-    setSelectedCard({name: '', link: ''});    
-    setImageZoomPopupOpen(false);
+    setIsPopupEditAvatarOpen(false);
+    setIsPopupEditProfileOpen(false);
+    setIsPopupAddPlaceOpen(false);
+    setIsPopupImageZoomOpen(false);
+
+    setSelectedCard({ name: '', link: '' });
   }
 
   //----------------------------------------------------
@@ -61,24 +61,25 @@ function App()
   function handleCardClick(card)
   {
     setSelectedCard(card);
-    setImageZoomPopupOpen(true);
+    setIsPopupImageZoomOpen(true);
   }
 
   // Добавление новой фотографии
   function handleAddPlaceClick()
   {
-    setAddPlacePopupOpen(true);
+    setIsPopupAddPlaceOpen(true);
   }
-  
+
   // Добавление картинки
-  function handleCardAdd(description, link)
+  function handleAddPlace(description, link)
   {
     api.addNewCard(description, link)
-      .then((card) => 
+      .then((card) =>
       {
-        updateCards([card, ...cards]); 
+        setCards([card, ...cards]);
         closeAllPopups();
-      });
+      })
+      .catch(console.error);
   }
 
   // Постановка лайка
@@ -86,20 +87,22 @@ function App()
   {
     const isLiked = card.likes.some(i => i._id === currentUser._id);
     api.changeLike(card._id, !isLiked)
-      .then((newCard) => 
+      .then((newCard) =>
       {
-        updateCards((state) => state.map((oldCard) => oldCard._id === card._id ? newCard : oldCard));
-      });
+        setCards((state) => state.map((oldCard) => oldCard._id === card._id ? newCard : oldCard));
+      })
+      .catch(console.error);
   }
 
   // Удаление картинки
   function handleCardDelete(card)
   {
     api.deleteCard(card._id)
-      .then(() => 
+      .then(() =>
       {
-        updateCards((state) => state.filter((oldCard) => oldCard._id !== card._id));
-      });
+        setCards((state) => state.filter((oldCard) => oldCard._id !== card._id));
+      })
+      .catch(console.error);
   }
   //----------------------------------------------------
   //                    Аватар
@@ -108,22 +111,18 @@ function App()
   // Изменение аватара
   function handleEditAvatarClick()
   {
-    setEditAvatarPopupOpen(true);
+    setIsPopupEditAvatarOpen(true);
   }
-  
-  function handleUpdateAvatar(link)
+
+  function handleEditAvatar(link)
   {
-    console.log(link);
     api.setUserAvatar(link)
       .then((result) =>
       {
-        setCurrentUser({
-          name: currentUser.name,
-          about: currentUser.about,
-          avatar: result.avatar
-        });
+        setCurrentUser(result);
         closeAllPopups();
-      });
+      })
+      .catch(console.error);
   }
 
   //----------------------------------------------------
@@ -132,64 +131,61 @@ function App()
   // Изменение профиля
   function handleEditProfileClick()
   {
-    setEditProfilePopupOpen(true);
+    setIsPopupEditProfileOpen(true);
   }
 
-  function handleUpdateUser(name, about)
+  function handleEditProfile(name, about)
   {
     api.setUserInfo(name, about)
       .then((result) =>
       {
-        setCurrentUser({
-          name: result.name,
-          about: result.about,
-          avatar: currentUser.avatar
-        });
+        setCurrentUser(result);
         closeAllPopups();
-      });
+      })
+      .catch(console.error);
   }
- 
+
   //----------------------------------------------------
   //                    Страница
   //----------------------------------------------------
-  return ( 
+  return (
     <CurrentUserContext.Provider value={currentUser}>
       <Header />
-      <Main 
-        cards ={cards}
-        onEditProfile={handleEditProfileClick} 
-        onAddPlace ={handleAddPlaceClick}
-        onEditAvatar ={handleEditAvatarClick}
-        onCardClick = {handleCardClick}
-        onCardDelete = {handleCardDelete}
-        onCardLike = {handleCardLike}
-      />    
+      <Main
+        cards={cards}
+        onEditProfileClick={handleEditProfileClick}
+        onAddPlaceClick={handleAddPlaceClick}
+        onEditAvatarClick={handleEditAvatarClick}
+        onCardClick={handleCardClick}
+        onCardDelete={handleCardDelete}
+        onCardLike={handleCardLike}
+      />
       <Footer />
-      
-      <FormProfile 
-        isOpen ={isEditProfilePopupOpen}
+
+      <PopupEditProfile
+        isOpen={isPopupEditProfileOpen}
         onClose={closeAllPopups}
-        onUpdateUser = {handleUpdateUser}
-      />      
-      <FormAvatar 
-        isOpen ={isEditAvatarPopupOpen}
-        onClose={closeAllPopups}
-        onUpdateAvatar = {handleUpdateAvatar}
+        onEditProfile={handleEditProfile}
       />
-      <FormPlaces 
-        isOpen ={isAddPlacePopupOpen}
+      <PopupEditAvatar
+        isOpen={isPopupEditAvatarOpen}
         onClose={closeAllPopups}
-        onAddPlace = {handleCardAdd}
+        onEditAvatar={handleEditAvatar}
       />
-      <FormDelete 
-        isOpen ={false}
+      <PopupAddPlace
+        isOpen={isPopupAddPlaceOpen}
+        onClose={closeAllPopups}
+        onAddPlace={handleAddPlace}
+      />
+      <PopupDeletePlace
+        isOpen={false}
         onClose={closeAllPopups}
       />
-      <ImagePopup 
-        isOpen = {isImageZoomPopupOpen}
-        onClose = {closeAllPopups}
-        card = {selectedCard}
-      />      
+      <PopupImageZoom
+        isOpen={isPopupImageZoomOpen}
+        onClose={closeAllPopups}
+        card={selectedCard}
+      />
     </CurrentUserContext.Provider>
   );
 }
