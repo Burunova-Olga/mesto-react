@@ -19,7 +19,6 @@ function App()
   const [selectedCard, setSelectedCard] = React.useState({name: '', link: ''});
   const [isImageZoomPopupOpen, setImageZoomPopupOpen] = React.useState(false); 
   const [cards, updateCards] = React.useState([]);
-
   const [currentUser, setCurrentUser] = React.useState(
     {
       name: 'Жак-Ив Кусто',
@@ -65,23 +64,23 @@ function App()
     setImageZoomPopupOpen(true);
   }
 
-  // Удаление картинки
-  function handleCardDelete(card)
-  {
-    console.log(card);
-    api.deleteCard(card._id)
-      .then(() => 
-      {
-        updateCards((state) => state.filter((oldCard) => oldCard._id !== card._id));
-      });
-  }
-
   // Добавление новой фотографии
   function handleAddPlaceClick()
   {
     setAddPlacePopupOpen(true);
   }
-   
+  
+  // Добавление картинки
+  function handleCardAdd(description, link)
+  {
+    api.addNewCard(description, link)
+      .then((card) => 
+      {
+        updateCards([card, ...cards]); 
+        closeAllPopups();
+      });
+  }
+
   // Постановка лайка
   function handleCardLike(card)
   {
@@ -93,6 +92,15 @@ function App()
       });
   }
 
+  // Удаление картинки
+  function handleCardDelete(card)
+  {
+    api.deleteCard(card._id)
+      .then(() => 
+      {
+        updateCards((state) => state.filter((oldCard) => oldCard._id !== card._id));
+      });
+  }
   //----------------------------------------------------
   //                    Аватар
   //----------------------------------------------------
@@ -105,6 +113,7 @@ function App()
   
   function handleUpdateAvatar(link)
   {
+    console.log(link);
     api.setUserAvatar(link)
       .then((result) =>
       {
@@ -170,6 +179,7 @@ function App()
       <FormPlaces 
         isOpen ={isAddPlacePopupOpen}
         onClose={closeAllPopups}
+        onAddPlace = {handleCardAdd}
       />
       <FormDelete 
         isOpen ={false}
